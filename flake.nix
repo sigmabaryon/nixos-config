@@ -69,10 +69,10 @@
     #  inputs.nixpkgs.follows = "nixpkgs";
     #};
 
-#     sops-nix = {
-#       url = "github:Mic92/sops-nix";
-#       inputs.nixpkgs.follows = "nixpkgs";
-#     };
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     #stylix = {
     #  url = "github:danth/stylix";
@@ -83,7 +83,7 @@
     #templates.url = "github:NixOS/templates";
   };
 
-  outputs = {self, nixpkgs, disko, home-manager, /*sops-nix,*/ impermanence, ...}@inputs: {
+  outputs = {self, nixpkgs, disko, home-manager, sops-nix, impermanence, ...}@inputs: {
 
     nixosConfigurations.wintermute = inputs.nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
@@ -103,11 +103,14 @@
             inherit inputs;
           };
           home-manager.users.bloomwhaler = import ./home.nix;
+          home-manager.sharedModules = [
+            inputs.sops-nix.homeManagerModules.sops
+          ];
         }
 
         impermanence.nixosModules.impermanence
 
-#         sops-nix.nixosModules.sops
+        sops-nix.nixosModules.sops
       ];
     };
      

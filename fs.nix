@@ -81,7 +81,7 @@
             type = "zfs_fs";
             options.mountpoint = "none";
           };
-          safe = {
+          persist = {
             type = "zfs_fs";
             options.mountpoint = "none";
           };
@@ -122,22 +122,6 @@
               mountpoint = "legacy";
             };
           };
-          "local/containers" = {
-            type = "zfs_fs";
-            mountpoint = "/.local/containers";
-            options = {
-              atime = "off";
-              mountpoint = "legacy";
-            };
-          };
-          "local/libvirt" = {
-            type = "zfs_fs";
-            mountpoint = "/.local/libvirt";
-            options = {
-              atime = "off";
-              mountpoint = "legacy";
-            };
-          };
           "local/home" = {
             type = "zfs_fs";
             mountpoint = "/home";
@@ -146,9 +130,19 @@
               zfs snapshot zroot/local/home@blank
             '';
           };
-          "/persist" = {
+          "persist/containers" = {
             type = "zfs_fs";
-            mountpoint = "/persist";
+            mountpoint = "/.persist/containers";
+            options.mountpoint = "legacy";
+          };
+          "persist/libvirt" = {
+            type = "zfs_fs";
+            mountpoint = "/.persist/libvirt";
+            options.mountpoint = "legacy";
+          };
+          "persist/state" = {
+            type = "zfs_fs";
+            mountpoint = "/.persist/state";
             options.mountpoint = "legacy";
           };
         }; # datasets

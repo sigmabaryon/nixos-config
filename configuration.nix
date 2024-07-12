@@ -6,10 +6,10 @@
       ./hardware-configuration.nix
     ];
 
-#   sops.defaultSopsFile = ./secrets/general.yaml;
-#   sops.age.sshKeyPaths = [ "/persist/.keys/ssh/ssh_host_ed25519_key" ];
-#   sops.age.keyFile = "/persist/.keys/sops-nix/key.txt";
-#   sops.age.generateKey = true;
+  sops.defaultSopsFile = ./secrets/general.yaml;
+  sops.age.sshKeyPaths = [ "/.persist/state/.keys/ssh/ssh_host_ed25519_key" ];
+  sops.age.keyFile = "/.persist/state/.keys/sops-nix/key.txt";
+  sops.age.generateKey = true;
 
   boot = {
     loader = {
@@ -22,27 +22,26 @@
     kernelParams = [ "nohibernate" ];
     initrd = {
       systemd.enable = lib.mkDefault true;
-#       systemd.services.rollback = {
-#         description = "Rollback ZFS datasets to a pristine state";
-#         wantedBy = [
-#           "initrd.target"
-#         ];
-#         after = [
-#           "zfs-import-zroot.service"
-#         ];
-#         before = [
-#           "sysroot.mount"
-#         ];
-#         path = with pkgs; [
-#           zfs
-#         ];
-#         unitConfig.DefaultDependencies = "no";
-#         serviceConfig.Type = "oneshot";
-#         script = ''
-#           zfs rollback -r zroot/local/root@blank && echo "root rollback complete"
-#           zfs rollback -r zroot/local/home@blank && echo "home rollback complete"
-#         '';
-#       };
+      systemd.services.rollback = {
+        description = "Rollback ZFS datasets to a pristine state";
+        wantedBy = [
+          "initrd.target"
+        ];
+        after = [
+          "zfs-import-zroot.service"
+        ];
+        before = [
+          "sysroot.mount"
+        ];
+        path = with pkgs; [
+          zfs
+        ];
+        unitConfig.DefaultDependencies = "no";
+        serviceConfig.Type = "oneshot";
+        script = ''
+          zfs rollback -r zroot/local/root@blank && echo "root rollback complete"
+        '';
+      };
     };
   };
 
@@ -159,12 +158,12 @@
 
   services.flatpak.enable = true;
 
-  sops.secrets.u-password.neededForUsers = true;
+  sops.secrets.u_pass.neededForUsers = true;
   users.users.bloomwhaler = {
     isNormalUser = true;
     description = "";
     extraGroups = [ "networkmanager" "wheel" "libvirtd"];
-#     hashedPasswordFile = config.sops.secrets.u-password.path;
+    hashedPasswordFile = config.sops.secrets.u_pass.path;
   };
 
   nixpkgs.config.allowUnfree = true;
@@ -186,9 +185,9 @@
 
   fileSystems."/".neededForBoot = true;
   fileSystems."/home".neededForBoot = true;
-  fileSystems."/persist".neededForBoot = true;
+  fileSystems."/.persist/state".neededForBoot = true;
   environment = {
-    persistence."/persist/state" = {
+    persistence."/.persist/state/root" = {
       hideMounts = true;
       directories = [
         "/etc/ssh"
@@ -196,17 +195,6 @@
         "/var/lib/nixos"
         "/var/lib/systemd/coredump"
         "/etc/NetworkManager/system-connections"
-
-        {
-          directory = "/home/bloomwhaler/.cache";
-          user = "bloomwhaler"; group = "users";
-          mode = "u=rwx,g=rx,o=";
-        }
-        {
-          directory = "/home/bloomwhaler/.var";
-          user = "bloomwhaler" ; group = "users";
-          mode = "u=rwx,g=rx,o=";
-        }
       ];
       files = [
         #"/etc/zfs/zpool.cache"
