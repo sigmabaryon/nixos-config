@@ -145,7 +145,7 @@
 
   programs.firefox.enable = true;
   programs.virt-manager.enable = true;
-  
+
   virtualisation = {
     libvirtd.enable = true;
     containers.enable = true;
@@ -212,6 +212,7 @@
   # };
   services.psd.enable = true;
   services.openssh.enable = true;
+  services.qemuGuest.enable = true;
 
   system.stateVersion = "24.05";
 }

@@ -1,4 +1,4 @@
-{ disks ? [ "/dev/disk/by-id/nvme-WDS500G3X0C-00SJG0_19426P459505" "/dev/disk/by-id/nvme-WDC_PC_SN730_SDBPNTY-1T00-1006_210205800881" ], ... }: {
+{ disks ? [ "/dev/vda" ], ... }: {
   disko.devices = {
     disk = {
        zdsk = {
@@ -27,35 +27,10 @@
           }; # partitions
         }; # content
       }; # zdsk
-      mdsk = {
-        type = "disk";
-        device = builtins.elemAt disks 1;
-        content = {
-          type = "gpt";
-          partitions = {
-            mirror = {
-              size = "476420M";
-              content = {
-                type = "zfs";
-                pool = "zroot";
-              };
-            };
-            store = {
-	      start = "476431M";
-              end = "-10M";
-              content = {
-                type = "zfs";
-                pool = "zstore";
-              };
-            };
-          }; # partitions
-        }; # content
-      }; # mdsk
     };#disk
     zpool = {
       zroot = {
         type = "zpool";
-        mode = "mirror";
         rootFsOptions = {
           acltype = "posixacl";
           canmount = "off";
@@ -130,70 +105,18 @@
               zfs snapshot zroot/local/home@blank
             '';
           };
-          "persist/containers" = {
-            type = "zfs_fs";
-            mountpoint = "/.persist/containers";
-            options.mountpoint = "legacy";
-          };
-          "persist/libvirt" = {
-            type = "zfs_fs";
-            mountpoint = "/.persist/libvirt";
-            options.mountpoint = "legacy";
-          };
           "persist/state" = {
             type = "zfs_fs";
-            mountpoint = "/.persist/state";
+            mountpoint = "/persist/state";
+            options.mountpoint = "legacy";
+          };
+          "persist/main" = {
+            type = "zfs_fs";
+            mountpoint = "/persist/main";
             options.mountpoint = "legacy";
           };
         }; # datasets
       }; # zroot
-      zstore = {
-        type = "zpool";
-        rootFsOptions = {
-          acltype = "posixacl";
-          canmount = "off";
-          xattr = "sa";
-          relatime = "on";
-          encryption = "aes-256-gcm";
-          keyformat = "passphrase";
-          keylocation = "file:///tmp/pass-zpool-zstore";
-          compression = "lz4";
-	  mountpoint = "none";
-          "com.sun:auto-snapshot" = "false";
-        };
-        postCreateHook = ''
-          zfs set keylocation="prompt" zstore
-        '';
-        options = {
-          ashift = "12";
-          autotrim = "on";
-        };
-        datasets = {
-          store = {
-            type = "zfs_fs";
-            mountpoint = "/store";
-            options.mountpoint = "legacy";
-          };
-          "store/gamelib" = {
-            type = "zfs_fs";
-            mountpoint = "/store/gamelib";
-            options = {
-              atime = "off";
-              mountpoint = "legacy";
-            };
-          };
-          "store/libvirt" = {
-            type = "zfs_fs";
-            mountpoint = "/store/libvirt";
-            options.mountpoint = "legacy";
-          };
-          "store/tank" = {
-            type = "zfs_fs";
-            mountpoint = "/store/tank";
-            options.mountpoint = "legacy";
-          };
-        }; # datasets
-      }; # zstore
     }; # zpool
   };#devices
 }
